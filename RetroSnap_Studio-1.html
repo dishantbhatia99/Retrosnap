@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RetroSnap Camera</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0b10;--fg:#f4f4f6;--mut:#9a9aa8;--ac:#ffb020;--card:#1b1b25;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--bg:#f4f4f7;--fg:#15151a;--mut:#666674;--card:#e5e5ec}}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{position:relative;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button{font-family:inherit}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.scr.on{display:flex}
+#home{align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px;background:radial-gradient(circle at 50% 18%,#ffb02030,#0000 55%),var(--bg)}
+.logo{font-size:76px;filter:drop-shadow(0 8px 24px #ffb02066)}
+h1{margin:0;font-size:32px;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:15px;max-width:300px;line-height:1.4}
+.btn{background:var(--ac);color:#000;border:0;border-radius:18px;padding:16px 26px;font-weight:800;font-size:17px;width:100%;max-width:320px;box-shadow:0 10px 30px #ffb02055}
+.btn2{background:var(--card);color:var(--fg);border:0;border-radius:16px;padding:13px 16px;font-weight:700;font-size:14px;flex:1}
+.row{display:flex;gap:10px;width:100%;max-width:320px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:340px;margin-top:6px}
+.tags span{font-size:12px;color:var(--mut);background:var(--card);padding:5px 10px;border-radius:12px}
+.stage{flex:1;position:relative;background:#000;overflow:hidden;border-radius:0 0 22px 22px;display:flex;align-items:center;justify-content:center}
+.fr{position:relative;width:100%;height:100%;overflow:hidden;max-width:100%;max-height:100%}
+video{width:100%;height:100%;object-fit:cover;display:block}
+.ov{position:absolute;inset:0;pointer-events:none}
+.grid{display:none;background:linear-gradient(#fff4 1px,#0000 1px) 0 33.3%/100% 33.4%,linear-gradient(90deg,#fff4 1px,#0000 1px) 33.3% 0/33.4% 100%}
+.top{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pill{background:#000a;color:#fff;border:0;border-radius:20px;padding:8px 12px;font-size:13px;font-weight:700;backdrop-filter:blur(8px)}
+.pill.on{background:var(--ac);color:#000}
+.sp{flex:1}
+.nm{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:#fff;text-shadow:0 1px 4px #000;font-weight:600}
+.stamp{position:absolute;right:14px;bottom:34px;color:#ff9a1f;font:700 14px ui-monospace,Menlo,monospace;text-shadow:0 0 4px #000}
+.count{display:none;align-items:center;justify-content:center;font-size:120px;font-weight:800;color:#fff;text-shadow:0 2px 24px #000}
+.flash{background:#fff;opacity:0;transition:opacity .25s}
+.zoom{display:flex;align-items:center;gap:10px;padding:10px 18px 0;font-size:13px;color:var(--mut)}
+.zoom input{flex:1;accent-color:var(--ac)}
+.scroll{display:flex;gap:8px;overflow-x:auto;padding:10px 12px 2px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.chip{flex:none;background:var(--card);color:var(--fg);border:2px solid transparent;border-radius:16px;padding:8px 13px;font-size:13px;font-weight:700}
+.chip.on{border-color:var(--ac);color:var(--ac)}
+.modes{display:flex;justify-content:center;gap:22px;padding:8px 0 0;font-size:13px;font-weight:800;color:var(--mut)}
+.modes b{cursor:pointer;padding:2px 0;border-bottom:2px solid transparent}
+.modes b.on{color:var(--ac);border-color:var(--ac)}
+.bar{display:flex;align-items:center;justify-content:space-around;padding:8px 18px 14px}
+.side{width:54px;height:54px;border-radius:16px;background:var(--card) center/cover;border:0;color:var(--fg);font-size:22px}
+.shut{width:78px;height:78px;border-radius:50%;border:5px solid var(--fg);background:var(--ac);box-shadow:inset 0 0 0 4px var(--bg);transition:transform .1s}
+.shut:active{transform:scale(.9)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:16px 20px 22px;display:none;z-index:4;box-shadow:0 -10px 40px #0008}
+.sheet.on{display:block}
+.sheet label{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;margin:12px 0}
+.sheet label span{width:82px}
+.sheet input{flex:1;accent-color:var(--ac)}
+.err{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column;gap:14px;align-items:center;justify-content:center;text-align:center;padding:28px;z-index:3}
+.err.on{display:flex}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-weight:800;font-size:18px}
+.tiles{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 12px 12px;align-content:start}
+.tile{background:var(--card);border-radius:14px;overflow:hidden}
+.tile img{width:100%;display:block}
+.tile div{display:flex}
+.tile button{flex:1;border:0;background:none;color:var(--ac);font-weight:800;padding:11px}
+.tile button+button{color:#ff5d5d}
+.empty{grid-column:1/-1;text-align:center;color:var(--mut);padding:50px 0}
+
+/* RetroSnap visual refresh — presentation only; existing features/logic unchanged */
+:root{
+  --bg:#090b12;--fg:#f7f5f1;--mut:#a5a7b5;--ac:#ffbd59;--card:#171b27;
+}
+body{
+  background:
+    radial-gradient(ellipse at 50% -15%,rgba(255,173,76,.18),transparent 48%),
+    radial-gradient(ellipse at 100% 100%,rgba(111,91,190,.10),transparent 42%),
+    var(--bg);
+  letter-spacing:.01em;
+}
+.scr{background:transparent}
+#home{
+  background:
+    radial-gradient(circle at 50% 17%,rgba(255,189,89,.22),transparent 38%),
+    radial-gradient(circle at 8% 85%,rgba(125,105,210,.13),transparent 34%),
+    linear-gradient(160deg,#101522 0%,#090b12 72%);
+  padding:30px 22px;
+}
+.logo{
+  width:116px;height:116px;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.13);border-radius:34px;
+  background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.025));
+  box-shadow:0 18px 55px rgba(0,0,0,.35),0 0 45px rgba(255,189,89,.12);
+  font-size:64px;filter:none;
+}
+h1{font-size:36px;font-weight:850;letter-spacing:-1.2px}
+.sub{color:#b8bac6;font-size:14px;max-width:290px;line-height:1.6}
+.btn{
+  border-radius:17px;padding:16px 24px;
+  background:linear-gradient(135deg,#ffd17c,#ffad43);
+  box-shadow:0 10px 28px rgba(255,173,67,.25),inset 0 1px rgba(255,255,255,.55);
+  transition:transform .18s ease,filter .18s ease;
+}
+.btn:active,.btn2:active,.side:active,.pill:active,.chip:active{transform:scale(.97)}
+.btn2{
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(145deg,#202637,#151a26);
+  border-radius:15px;transition:transform .18s ease,border-color .18s ease;
+}
+.tags{gap:8px;max-width:360px;margin-top:10px}
+.tags span{
+  color:#d4d5dd;background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.075);border-radius:999px;
+  padding:7px 11px;font-size:11px;backdrop-filter:blur(10px);
+}
+.stage{background:#020308;border-radius:0 0 26px 26px;box-shadow:0 14px 35px rgba(0,0,0,.22)}
+.top{top:14px;left:12px;right:12px}
+.pill{
+  background:rgba(10,12,18,.72);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);box-shadow:0 5px 16px rgba(0,0,0,.18);
+}
+.pill.on{background:var(--ac);border-color:transparent;color:#17120a}
+.zoom{padding-top:13px}
+.zoom input,.sheet input{accent-color:var(--ac)}
+.scroll{padding:12px 14px 4px;gap:9px}
+.chip{
+  background:linear-gradient(145deg,#202637,#151a26);
+  border:1px solid rgba(255,255,255,.055);border-radius:14px;
+  padding:9px 14px;transition:all .18s ease;
+}
+.chip.on{
+  color:#ffd17c;border-color:rgba(255,189,89,.8);
+  background:rgba(255,189,89,.12);box-shadow:0 0 0 1px rgba(255,189,89,.08);
+}
+.modes{padding-top:10px;gap:28px}
+.modes b{padding:5px 2px 7px}
+.bar{padding:10px 16px 17px}
+.side{
+  border:1px solid rgba(255,255,255,.07);
+  background-color:#1a2030;border-radius:18px;
+  box-shadow:0 7px 18px rgba(0,0,0,.2);
+}
+.shut{
+  border:5px solid #f5f2e9;background:linear-gradient(145deg,#ffd17c,#ffad43);
+  box-shadow:inset 0 0 0 4px #171b27,0 8px 24px rgba(255,173,67,.22);
+}
+.sheet{
+  background:rgba(23,27,39,.97);border:1px solid rgba(255,255,255,.09);
+  backdrop-filter:blur(20px);box-shadow:0 -15px 45px rgba(0,0,0,.45);
+}
+header{padding:16px}
+.tiles{gap:12px;padding:0 14px 16px}
+.tile{
+  background:#171b27;border:1px solid rgba(255,255,255,.07);
+  border-radius:17px;box-shadow:0 8px 22px rgba(0,0,0,.18);
+}
+.tile img{aspect-ratio:1/1;object-fit:cover}
+.tile button{padding:13px 9px}
+.err{background:rgba(9,11,18,.96);backdrop-filter:blur(16px)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+
+
+/* RetroSnap signature camera-home design */
+#home{justify-content:flex-start;overflow-y:auto;padding-top:max(34px,env(safe-area-inset-top));padding-bottom:30px;gap:12px}
+.hero-camera{
+  position:relative;width:min(82vw,330px);height:190px;margin:0 auto 2px;
+  border-radius:30px;background:linear-gradient(145deg,#f0eee8 0%,#bfc0c3 22%,#777b84 58%,#343945 100%);
+  border:1px solid rgba(255,255,255,.62);
+  box-shadow:0 24px 55px rgba(0,0,0,.48),inset 0 3px 5px rgba(255,255,255,.75),inset 0 -8px 18px rgba(0,0,0,.25);
+  transform:perspective(700px) rotateX(4deg) rotateY(-7deg);
+}
+.hero-camera:before{
+  content:"";position:absolute;inset:10px;border-radius:23px;
+  border:1px solid rgba(255,255,255,.35);pointer-events:none;
+}
+.cam-lens{
+  position:absolute;width:116px;height:116px;left:50%;top:50%;transform:translate(-50%,-42%);
+  border-radius:50%;background:radial-gradient(circle,#101a28 0 16%,#53707a 17% 21%,#15202e 23% 37%,#71818a 39% 43%,#222a35 45% 58%,#aeb3b9 60% 64%,#424852 67% 100%);
+  border:5px solid #303641;box-shadow:0 5px 12px #0008,inset 0 0 0 2px #d9dce0;
+}
+.cam-lens i{position:absolute;width:28px;height:28px;left:22px;top:20px;border-radius:50%;background:#c8e6ee;opacity:.55;filter:blur(5px)}
+.cam-lens b{position:absolute;inset:30px;border-radius:50%;border:1px solid #9db3bd66}
+.cam-flash{position:absolute;right:28px;top:31px;width:34px;height:20px;border-radius:6px;background:linear-gradient(#f9f7e9,#aeb3b9);box-shadow:0 2px 5px #0005}
+.cam-view{position:absolute;left:27px;top:31px;width:28px;height:18px;border-radius:5px;background:linear-gradient(135deg,#202d3a,#718b91);border:2px solid #5c626c}
+.cam-mark{position:absolute;left:25px;bottom:24px;color:#252b35;font:900 10px ui-monospace,monospace;letter-spacing:1.7px}
+.cam-mark span{color:#a66b2b;margin-left:3px}
+.cam-shutter{position:absolute;right:26px;top:-8px;width:43px;height:12px;border-radius:8px 8px 3px 3px;background:linear-gradient(#e5e6e8,#777d86);border:1px solid #ffffff88}
+.eyebrow{font-size:10px;font-weight:900;letter-spacing:3px;color:#e6b66f;margin-top:2px}
+#home h1{font-size:39px;line-height:1.05}
+#home .sub{max-width:280px}
+#home .btn{margin-top:8px}
+#home .row{max-width:350px}
+#home .tags{max-width:370px}
+#home .tags span{font-size:10px}
+.sheet label span{width:82px;flex:none}
+.sheet label{margin:10px 0}
+@media(min-width:600px){
+  #home{justify-content:center}
+  .hero-camera{width:330px;height:190px}
+}
+
+</style></head>
+<body>
+<section class="scr on" id="home">
+  <div class="hero-camera" aria-label="RetroSnap vintage digital camera illustration">
+    <div class="cam-flash"></div><div class="cam-view"></div>
+    <div class="cam-lens"><i></i><b></b></div>
+    <div class="cam-mark">RETRO<span>SNAP</span></div>
+    <div class="cam-shutter"></div>
+  </div>
+  <div class="eyebrow">DIGITAL CAMERA EXPERIENCE</div>
+  <h1>RetroSnap</h1>
+  <div class="sub">Old-school digicam magic. Capture today, feel the nostalgia.</div>
+  <button class="btn" id="hGo">📸 Camera kholo</button>
+  <div class="row"><button class="btn2" id="hGal">🖼 Gallery (<span id="cnt0">0</span>)</button><button class="btn2" id="hUp">⬆ Photo upload</button></div>
+  <div class="tags"><span>28+ camera looks</span><span>Zoom</span><span>Flash</span><span>Timer</span><span>Burst</span><span>Photo Booth</span><span>Ratio</span><span>Date stamp</span><span>Pro tune</span><span>Auto save</span><span>Exposure</span><span>Warmth</span></div>
+</section>
+<section class="scr" id="cam">
+  <div class="stage">
+    <div class="fr" id="fr">
+      <video id="v" autoplay playsinline muted></video>
+      <div class="ov" id="vig"></div><div class="ov grid" id="grid"></div>
+      <div class="stamp" id="stamp"></div>
+      <div class="nm" id="nm"></div>
+    </div>
+    <div class="top">
+      <button class="pill" id="bB">← Home</button><span class="sp"></span>
+      <button class="pill" id="bFl">⚡ Off</button>
+      <button class="pill" id="bT">⏱ Off</button>
+      <button class="pill" id="bR">▭ Full</button>
+    </div>
+    <div class="ov count" id="cnt"></div><div class="ov flash" id="fl"></div>
+    <div class="err" id="err"><div style="font-size:42px">📷</div><div><b>Camera nahi khul paya</b><br><span style="color:var(--mut);font-size:14px">Permission allow karo, ya page ko seedha browser mein kholo. Tab tak photo upload karke look laga sakte ho.</span></div><button class="btn" id="eUp">⬆ Photo upload karo</button><button class="btn2" id="eRe" style="flex:none">Dobara try karo</button></div>
+  </div>
+  <div class="zoom">🔍<input type="range" id="zm" min="1" max="5" step=".1" value="1"><span id="zv">1.0×</span></div>
+  <div class="scroll" id="looks"></div>
+  <div class="modes"><b class="on" data-m="0">Photo</b><b data-m="1">Burst</b><b data-m="2">Booth</b></div>
+  <div class="bar"><button class="side" id="bG">🖼</button><button class="shut" id="bS" aria-label="Photo kheencho"></button><div style="display:flex;flex-direction:column;gap:8px"><button class="pill on" id="bD" style="padding:8px 10px">📅</button><button class="pill" id="bGr" style="padding:8px 10px">▦</button></div><button class="side" id="bF">🔄</button><button class="side" id="bTu">🎚</button></div>
+  <div class="sheet" id="sh">
+    <b>Tune karo</b>
+    <label><span>Brightness</span><input type="range" data-k="b" min=".5" max="1.6" step=".05" value="1"></label>
+    <label><span>Contrast</span><input type="range" data-k="c" min=".5" max="1.6" step=".05" value="1"></label>
+    <label><span>Colour</span><input type="range" data-k="s" min="0" max="2.5" step=".05" value="1"></label>
+    <label><span>Exposure</span><input type="range" data-k="e" min="-.35" max=".35" step=".01" value="0"></label>
+    <label><span>Warmth</span><input type="range" data-k="w" min="0" max=".45" step=".01" value="0"></label>
+    <div class="row" style="max-width:none"><button class="btn2" id="tR">Reset</button><button class="btn2" id="tC" style="background:var(--ac);color:#000">Done</button></div>
+  </div>
+</section>
+<section class="scr" id="gal">
+  <header><button class="pill on" id="gB">← Home</button><span>Meri photos</span><button class="pill" id="gCam">📸</button></header>
+  <div class="tiles" id="tiles"></div>
+</section>
+<input type="file" id="file" accept="image/*" hidden>
+<script>
+const $=s=>document.querySelector(s),v=$('#v'),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const looks=[
+{n:'Normal',f:'',v:0,g:0},
+{n:'Y2K CCD',f:'contrast(1.2) saturate(1.35) brightness(1.1)',v:.3,g:.07},
+{n:'Cyber-shot',f:'contrast(1.1) saturate(1.5) brightness(1.05)',v:.15,g:.03},
+{n:'Coolpix',f:'saturate(.9) contrast(1.05) sepia(.12) hue-rotate(-8deg)',v:.2,g:.05},
+{n:'IXUS Warm',f:'sepia(.25) saturate(1.3) contrast(1.1) brightness(1.05)',v:.25,g:.05},
+{n:'Kodak Gold',f:'sepia(.35) saturate(1.4) contrast(1.05) brightness(1.08) hue-rotate(-10deg)',v:.25,g:.09},
+{n:'Fujifilm',f:'saturate(1.25) contrast(1.1) hue-rotate(8deg) brightness(1.03)',v:.2,g:.06},
+{n:'Polaroid',f:'contrast(.95) saturate(1.2) sepia(.15) brightness(1.08)',v:.2,g:.06,frame:1},
+{n:'Film 35mm',f:'sepia(.2) contrast(1.15) saturate(.95) hue-rotate(10deg)',v:.35,g:.12},
+{n:'Leica B&W',f:'grayscale(1) contrast(1.45) brightness(.95)',v:.4,g:.14},
+{n:'B&W',f:'grayscale(1) contrast(1.15)',v:.25,g:.06},
+{n:'Vivid',f:'saturate(1.7) contrast(1.15)',v:.1,g:.02},
+{n:'Dreamy',f:'brightness(1.15) contrast(.88) saturate(1.2) blur(.6px)',v:.1,g:.03},
+{n:'Night',f:'brightness(1.35) contrast(1.2) saturate(.8) hue-rotate(185deg) sepia(.2)',v:.4,g:.1},
+{n:'Sunset',f:'sepia(.5) saturate(1.8) hue-rotate(-18deg) contrast(1.05)',v:.3,g:.05},
+{n:'Cinema',f:'contrast(1.25) saturate(.85) sepia(.15) hue-rotate(160deg) brightness(.92)',v:.45,g:.07},
+{n:'Sony W-Series',f:'contrast(1.16) saturate(1.42) brightness(1.06) sepia(.04)',v:.18,g:.045},
+{n:'Canon PowerShot',f:'contrast(1.12) saturate(1.28) brightness(1.04) sepia(.07)',v:.16,g:.035},
+{n:'Nikon Coolpix S',f:'contrast(1.13) saturate(1.18) brightness(1.02) hue-rotate(-4deg)',v:.20,g:.04},
+{n:'Fujifilm FinePix',f:'contrast(1.08) saturate(1.34) sepia(.08) hue-rotate(5deg)',v:.22,g:.055},
+{n:'Lumix Compact',f:'contrast(1.2) saturate(1.12) brightness(1.02)',v:.17,g:.025},
+{n:'Olympus mju',f:'contrast(1.1) saturate(1.22) sepia(.12) brightness(1.05)',v:.24,g:.065},
+{n:'Casio Exilim',f:'contrast(1.18) saturate(1.38) brightness(1.08)',v:.14,g:.035},
+{n:'Samsung Digimax',f:'contrast(1.14) saturate(1.3) hue-rotate(-5deg) brightness(1.03)',v:.2,g:.05},
+{n:'Kodak EasyShare',f:'sepia(.2) saturate(1.38) contrast(1.08) brightness(1.06)',v:.27,g:.075},
+{n:'Ricoh GR Mood',f:'contrast(1.28) saturate(.92) brightness(.98)',v:.3,g:.08},
+{n:'Pentax Optio',f:'contrast(1.15) saturate(1.25) sepia(.06) brightness(1.04)',v:.19,g:.045},
+{n:'Minolta DiMAGE',f:'contrast(1.2) saturate(1.16) sepia(.1) hue-rotate(-7deg)',v:.26,g:.07}];
+const ARS=[0,4/3,1,16/9],ARN=['Full','4:3','1:1','16:9'];
+let stream,face='environment',cur=1,tm=0,stamp=1,fl=0,ar=0,z=1,mode=0,busy=0,shots=[],T={b:1,c:1,s:1,e:0,w:0};
+const dateTxt=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `’${String(d.getFullYear()).slice(2)} ${p(d.getMonth()+1)} ${p(d.getDate())}`};
+const flt=()=>(looks[cur].f?looks[cur].f+' ':'')+`brightness(${T.b*(1+T.e)}) contrast(${T.c}) saturate(${T.s}) sepia(${T.w})`;
+function go(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id===id));if(id==='cam')start();else stop();if(id==='gal')drawGal()}
+function stop(){stream&&stream.getTracks().forEach(t=>t.stop());stream=null}
+function apply(){const L=looks[cur];v.style.filter=flt();v.style.transform=`${face==='user'?'scaleX(-1) ':''}scale(${z})`;
+$('#vig').style.background=`radial-gradient(circle,#0000 45%,rgba(0,0,0,${L.v}) 100%)`;$('#nm').textContent=L.n;
+const a=ARS[ar],fr=$('#fr');fr.style.aspectRatio=a||'auto';fr.style.width=a?'100%':'100%';fr.style.height=a?'auto':'100%';
+document.querySelectorAll('.chip').forEach((c,j)=>c.classList.toggle('on',j===cur));$('#zv').textContent=z.toFixed(1)+'×';
+$('#stamp').style.display=stamp?'block':'none'}
+looks.forEach((L,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=L.n;b.onclick=()=>{cur=i;apply()};$('#looks').append(b)});
+async function start(){
+  stop();
+  const err=$('#err');
+  const msg=err.querySelector('span');
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('Camera access is unavailable. Open this page using HTTPS in Chrome.');
+    }
+    // Try preferred rear/front camera first, then use browser defaults for device compatibility.
+    let media;
+    const attempts=[
+      {video:{facingMode:{ideal:face},width:{ideal:1280},height:{ideal:720}},audio:false},
+      {video:{facingMode:face},audio:false},
+      {video:true,audio:false}
+    ];
+    let lastError;
+    for(const constraints of attempts){
+      try{media=await navigator.mediaDevices.getUserMedia(constraints);break}
+      catch(e){lastError=e}
+    }
+    if(!media)throw lastError||new Error('Camera could not be started.');
+    stream=media;
+    v.srcObject=stream;
+    await v.play();
+    err.classList.remove('on');
+  }catch(e){
+    console.error('RetroSnap camera error:',e);
+    const reasons={
+      NotAllowedError:'Camera permission blocked hai. Browser settings mein is website ke liye Camera permission Allow karo, phir retry karo.',
+      PermissionDeniedError:'Camera permission blocked hai. Browser settings mein is website ke liye Camera permission Allow karo, phir retry karo.',
+      NotFoundError:'Is device par camera detect nahi hua.',
+      NotReadableError:'Camera kisi doosri app mein busy hai. Doosri camera app band karke retry karo.',
+      OverconstrainedError:'Camera settings supported nahi hain. Retry karke dekho.'
+    };
+    if(msg)msg.textContent=reasons[e.name]||e.message||'Camera start nahi ho paya. Page ko HTTPS par Chrome mein kholo aur camera permission allow karo.';
+    err.classList.add('on');
+  }
+  apply();
+}
+const dbp=new Promise(r=>{try{const q=indexedDB.open('dc',1);q.onupgradeneeded=()=>q.result.createObjectStore('p',{autoIncrement:true});q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(e){r(null)}});
+async function dbo(m,f){const d=await dbp;if(!d)return;return new Promise(r=>{try{const t=d.transaction('p',m),q=f(t.objectStore('p'));t.oncomplete=()=>r(q&&q.result);t.onerror=()=>r()}catch(e){r()}})}
+async function load(){const k=await dbo('readonly',s=>s.getAllKeys()),u=await dbo('readonly',s=>s.getAll());if(k&&u)shots=k.map((id,i)=>({id,url:u[i]})).reverse();upd()}
+function upd(){$('#cnt0').textContent=shots.length;const b=$('#bG');if(shots[0]){b.style.backgroundImage=`url(${shots[0].url})`;b.textContent=''}else{b.style.backgroundImage='';b.textContent='🖼'}}
+async function add(c){const url=c.toDataURL('image/jpeg',.92),id=await dbo('readwrite',s=>s.add(url));shots.unshift({id,url});upd()}
+function render(src,sw,sh,mir,zz=z,aa=ar){
+ const L=looks[cur],a=ARS[aa];let cw=sw/zz,ch=sh/zz;if(a){if(cw/ch>a)cw=ch*a;else ch=cw/a}
+ const k=Math.min(1,2400/Math.max(cw,ch)),w=Math.round(cw*k),h=Math.round(ch*k),fr=L.frame?Math.round(w*.04):0,c=document.createElement('canvas');
+ c.width=w+fr*2;c.height=h+fr*4;const x=c.getContext('2d');
+ if(fr){x.fillStyle='#f6f1e7';x.fillRect(0,0,c.width,c.height)}
+ x.save();x.translate(fr,fr);if(mir){x.translate(w,0);x.scale(-1,1)}
+ x.filter=flt();x.drawImage(src,(sw-cw)/2,(sh-ch)/2,cw,ch,0,0,w,h);x.restore();x.filter='none';
+ x.save();x.translate(fr,fr);
+ if(L.v){const g=x.createRadialGradient(w/2,h/2,Math.min(w,h)*.35,w/2,h/2,Math.max(w,h)*.7);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${L.v})`);x.fillStyle=g;x.fillRect(0,0,w,h)}
+ if(L.g){for(let i=0;i<w*h/700;i++){x.fillStyle=Math.random()<.5?`rgba(255,255,255,${L.g})`:`rgba(0,0,0,${L.g})`;x.fillRect(Math.random()*w,Math.random()*h,2,2)}}
+ if(stamp){const s=Math.round(w*.032);x.font=`700 ${s}px ui-monospace,Menlo,monospace`;x.fillStyle='#ff9a1f';x.shadowColor='#000';x.shadowBlur=s/3;x.textAlign='right';x.fillText(dateTxt(),w-s,h-s)}
+ x.restore();return c}
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=1400;g.gain.value=.08;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.08);o.stop(a.currentTime+.09)}catch(e){}}
+async function count(n){const c=$('#cnt');c.style.display='flex';for(;n>0;n--){c.textContent=n;await sleep(1000)}c.style.display='none'}
+async function lit(){if(!fl)return;try{const t=stream.getVideoTracks()[0];if(t.getCapabilities().torch){await t.applyConstraints({advanced:[{torch:true}]});await sleep(400);return}}catch(e){}$('#fl').style.cssText='opacity:1;transition:none';await sleep(250)}
+function unlit(){$('#fl').style.cssText='';try{stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:false}]})}catch(e){}}
+function strip(cs){const W=700,H=Math.round(cs[0].height*W/cs[0].width),p=40,c=document.createElement('canvas');c.width=W+p*2;c.height=(H+p)*cs.length+p*4;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);cs.forEach((s,i)=>x.drawImage(s,p,p+i*(H+p),W,H));x.fillStyle='#222';x.font='700 50px system-ui';x.textAlign='center';x.fillText('RetroSnap • '+dateTxt(),c.width/2,c.height-p);return c}
+async function shoot(){
+ if(busy||!stream||!v.videoWidth)return;busy=1;const n=mode?4:1,cs=[];
+ for(let i=0;i<n;i++){
+  if(mode===2)await count(3);else if(i===0&&tm)await count(tm);
+  await lit();beep();cs.push(render(v,v.videoWidth,v.videoHeight,face==='user'));unlit();
+  if(mode===1)await sleep(250)}
+ if(mode===2)await add(strip(cs));else for(const c of cs)await add(c);
+ busy=0}
+$('#bS').onclick=shoot;
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&$('#cam').classList.contains('on')){e.preventDefault();shoot()}});
+$('#bF').onclick=()=>{face=face==='user'?'environment':'user';start()};
+$('#bFl').onclick=e=>{fl=!fl;e.target.textContent='⚡ '+(fl?'On':'Off');e.target.classList.toggle('on',fl)};
+$('#bT').onclick=e=>{tm=tm===0?3:tm===3?10:0;e.target.textContent='⏱ '+(tm?tm+'s':'Off');e.target.classList.toggle('on',!!tm)};
+$('#bR').onclick=e=>{ar=(ar+1)%4;e.target.textContent='▭ '+ARN[ar];e.target.classList.toggle('on',!!ar);apply()};
+$('#bD').onclick=e=>{stamp=!stamp;e.target.classList.toggle('on',!!stamp);apply()};
+$('#bGr').onclick=e=>{const g=$('#grid'),on=g.style.display!=='block';g.style.display=on?'block':'none';e.target.classList.toggle('on',on)};
+$('#zm').oninput=e=>{z=+e.target.value;apply()};
+document.querySelectorAll('.modes b').forEach(b=>b.onclick=()=>{mode=+b.dataset.m;document.querySelectorAll('.modes b').forEach(x=>x.classList.toggle('on',x===b))});
+$('#bTu').onclick=()=>$('#sh').classList.add('on');
+$('#tC').onclick=()=>$('#sh').classList.remove('on');
+document.querySelectorAll('.sheet input').forEach(i=>i.oninput=()=>{T[i.dataset.k]=+i.value;apply()});
+$('#tR').onclick=()=>{T={b:1,c:1,s:1,e:0,w:0};document.querySelectorAll('.sheet input').forEach(i=>i.value=Number(i.dataset.k==='e'||i.dataset.k==='w'?0:1));apply()};
+$('#hGo').onclick=()=>go('cam');$('#bB').onclick=()=>go('home');
+$('#hGal').onclick=$('#bG').onclick=()=>go('gal');$('#gB').onclick=()=>go('home');$('#gCam').onclick=()=>go('cam');
+$('#hUp').onclick=$('#eUp').onclick=()=>$('#file').click();$('#eRe').onclick=start;
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=async()=>{await add(render(im,im.naturalWidth,im.naturalHeight,false,1,0));go('gal')};im.src=URL.createObjectURL(f);e.target.value=''};
+async function save(url){
+ const b=await (await fetch(url)).blob(),file=new File([b],`digicam-${Date.now()}.jpg`,{type:'image/jpeg'});
+ try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});return}}catch(e){}
+ const a=document.createElement('a');a.href=url;a.download=file.name;a.click()}
+function drawGal(){
+ const t=$('#tiles');t.innerHTML='';
+ if(!shots.length)t.innerHTML='<div class="empty">Abhi koi photo nahi.<br>Camera kholo aur shutter dabao!</div>';
+ shots.forEach((s,i)=>{const d=document.createElement('div');d.className='tile';d.innerHTML=`<img src="${s.url}" alt="photo ${i+1}"><div><button>⬇ Save</button><button>🗑 Delete</button></div>`;
+ const [b1,b2]=d.querySelectorAll('button');b1.onclick=()=>save(s.url);b2.onclick=async()=>{await dbo('readwrite',x=>x.delete(s.id));shots=shots.filter(q=>q!==s);upd();drawGal()};t.append(d)})}
+$('#stamp').textContent=dateTxt();load();apply();
+</script></body></html>
